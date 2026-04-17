@@ -6,7 +6,12 @@ const app=express();
 
 //Connect Database
 connectDB();
+const cors = require('cors');
 
+app.use(cors({
+  origin: 'https://devconnector-1-gjlt.onrender.com',
+  credentials: true
+}));
 //Initialise moddleware
 //It tells Express to accept JSON data from incoming requests and make it available in req.body.
 //extended:false uses basic parsing
