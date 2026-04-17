@@ -47,10 +47,15 @@ router.post('/',[
                 }
             }
         //jwt token contains header and payload which has id and intialisation date and expiry date
-        jwt.sign(payload,config.get('jwtSecret'),{expiresIn:36000000},(err,token)=>{
-            if(err)throw err;
-            res.json({token});
-                    });
+        jwt.sign(
+  payload,
+  process.env.JWT_SECRET,
+  { expiresIn: 36000000 },
+  (err, token) => {
+    if (err) throw err;
+    res.json({ token });
+  }
+);
       
     }catch(err){
        console.error(err.message);
