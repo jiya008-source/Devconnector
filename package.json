@@ -1,0 +1,30 @@
+{
+  "name": "devconnector",
+  "version": "1.0.0",
+  "description": "Social network for developers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "server": "nodemon server",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "proxy": "http://localhost:5001",
+  "author": "Jiya",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
+    "config": "^4.1.1",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.1",
+    "gravatar": "^1.8.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.1",
+    "react-router-dom": "^6.30.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11"
+  }
+}
