@@ -1,4 +1,4 @@
-import api from '..utils/api'; // adjust path if needed
+import api from '../utils/api'; // adjust path if needed
 import { setAlert } from './alert';
 import {
   GET_POSTS,
