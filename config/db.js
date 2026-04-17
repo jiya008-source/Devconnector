@@ -1,18 +1,19 @@
-const mongoose=require('mongoose');
-const config=require('config');
-const db=config.get('mongoURI');
-const connectDB=async()=>{
-    try{
+const mongoose = require('mongoose');
+const config = require('config');
+
+const db = process.env.mongoURI || config.get('mongoURI');
+
+const connectDB = async () => {
+    try {
         await mongoose.connect(db);
         console.log('MongoDB Connected');
-    }catch(err){
+    } catch (err) {
         console.error(err.message);
-        //Exit process with failure, 1 means failure
         process.exit(1);
     }
 }
-module.exports=connectDB;
 
+module.exports = connectDB;
 
 //While mongoDB is connecting, Node.js does not block, it can continue handling other requests because 
 //the connection is asynchrounous.
