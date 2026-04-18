@@ -1,0 +1,10 @@
+{
+    "MONGO_URI": "MONGO_URI",
+    "JWT_SECRET": "JWT_SECRET",
+    "githubClientId": "GITHUB_CLIENT_ID",
+    "githubSecret": "GITHUB_SECRET",
+    "githubToken": "GITHUB_TOKEN",
+    "cloudinaryApiKey": "CLOUDINARY_API_KEY",
+    "cloudinaryApiSecret": "CLOUDINARY_API_SECRET",
+    "cloudinaryCloudName": "CLOUDINARY_CLOUD_NAME"
+}
