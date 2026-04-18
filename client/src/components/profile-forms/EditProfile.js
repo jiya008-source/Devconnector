@@ -17,6 +17,7 @@ const initialState = {
   linkedin: '',
   youtube: '',
   instagram: '',
+  avatar: ''
 };
 
 const EditProfile = ({
@@ -24,37 +25,30 @@ const EditProfile = ({
   createProfile,
   getCurrentProfile
 }) => {
-  const [formData, setFormData] = useState({
-    company: '',
-    website: '',
-    location: '',
-    status: '',
-    skills: '',
-    githubusername: '',
-    bio: '',
-    twitter: '',
-    facebook: '',
-    linkedin: '',
-    youtube: '',
-    instagram: '',
-  });
-  const navigate = useNavigate();
+  const [formData, setFormData] = useState(initialState);
+  const [file, setFile] = useState(null);
   const [displaySocialInputs, toggleSocialInputs] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!profile) getCurrentProfile();
-    if (!loading) {
+
+    if (!loading && profile) {
       const profileData = { ...initialState };
+
       for (const key in profileData) {
-        if (key in profileData) profileData[key] = profile[key];
+        if (profile[key]) profileData[key] = profile[key];
       }
-      for (const key in profile.social) {
-        if (key in profileData) profileData[key] = profile.social[key];
+
+      if (profile.social) {
+        for (const key in profile.social) {
+          if (profile.social[key]) profileData[key] = profile.social[key];
+        }
       }
+
       setFormData(profileData);
     }
-  // }, [loading]);
-    }, [loading, getCurrentProfile]);
+  }, [loading, getCurrentProfile, profile]);
 
   const {
     company,
@@ -68,28 +62,61 @@ const EditProfile = ({
     facebook,
     linkedin,
     youtube,
-    instagram,
+    instagram
   } = formData;
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    createProfile(formData, navigate, true);
+
+    let avatarUrl = formData.avatar;
+
+    // 1. Upload image if selected
+    if (file) {
+      const formDataFile = new FormData();
+      formDataFile.append('image', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataFile
+      });
+
+      const data = await res.json();
+      avatarUrl = data.filePath;
+    }
+
+    // 2. Save profile with avatar URL
+    createProfile(
+      { ...formData, avatar: avatarUrl },
+      navigate,
+      true
+    );
   };
 
   return (
     <Fragment>
       <h1 className='large text-primary'>Edit Your Profile</h1>
       <p className='lead'>
-        <i className='fas fa-user' /> Add some changes to your profile
+        <i className='fas fa-user' /> Edit your profile
       </p>
-      <small>* = required field</small>
-      <form className='form' onSubmit={(e) => onSubmit(e)}>
+
+      <form className='form' onSubmit={onSubmit}>
+
+        {/* ✅ PROFILE IMAGE INPUT */}
         <div className='form-group'>
-          <select name='status' value={status} onChange={(e) => onChange(e)}>
-            <option>* Select Professional Status</option>
+          <p>Profile Image</p>
+          <input
+            type='file'
+            accept='image/*'
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+        </div>
+
+        <div className='form-group'>
+          <select name='status' value={status} onChange={onChange}>
+            <option value=''>* Select Professional Status</option>
             <option value='Developer'>Developer</option>
             <option value='Junior Developer'>Junior Developer</option>
             <option value='Senior Developer'>Senior Developer</option>
@@ -99,153 +126,75 @@ const EditProfile = ({
             <option value='Intern'>Intern</option>
             <option value='Other'>Other</option>
           </select>
-          <small className='form-text'>
-            Give us an idea of where you are at in your career
-          </small>
-        </div>
-        <div className='form-group'>
-          <input
-            type='text'
-            placeholder='Company'
-            name='company'
-            value={company}
-            onChange={(e) => onChange(e)}
-          />
-          <small className='form-text'>
-            Could be your own company or one you work for
-          </small>
-        </div>
-        <div className='form-group'>
-          <input
-            type='text'
-            placeholder='Website'
-            name='website'
-            value={website}
-            onChange={(e) => onChange(e)}
-          />
-          <small className='form-text'>
-            Could be your own or a company website
-          </small>
-        </div>
-        <div className='form-group'>
-          <input
-            type='text'
-            placeholder='Location'
-            name='location'
-            value={location}
-            onChange={(e) => onChange(e)}
-          />
-          <small className='form-text'>
-            City & state suggested (eg. Boston, MA)
-          </small>
-        </div>
-        <div className='form-group'>
-          <input
-            type='text'
-            placeholder='* Skills'
-            name='skills'
-            value={skills}
-            onChange={(e) => onChange(e)}
-          />
-          <small className='form-text'>
-            Please use comma separated values (eg. HTML,CSS,JavaScript,PHP)
-          </small>
-        </div>
-        <div className='form-group'>
-          <input
-            type='text'
-            placeholder='Github Username'
-            name='githubusername'
-            value={githubusername}
-            onChange={(e) => onChange(e)}
-          />
-          <small className='form-text'>
-            If you want your latest repos and a Github link, include your
-            username
-          </small>
-        </div>
-        <div className='form-group'>
-          <textarea
-            placeholder='A short bio of yourself'
-            name='bio'
-            value={bio}
-            onChange={(e) => onChange(e)}
-          />
-          <small className='form-text'>Tell us a little about yourself</small>
         </div>
 
-        <div className='my-2'>
-          <button
-            onClick={() => toggleSocialInputs(!displaySocialInputs)}
-            type='button'
-            className='btn btn-light'
-          >
-            Add Social Network Links
-          </button>
-          <span>Optional</span>
-        </div>
+        <input
+          type='text'
+          placeholder='Company'
+          name='company'
+          value={company}
+          onChange={onChange}
+        />
+
+        <input
+          type='text'
+          placeholder='Website'
+          name='website'
+          value={website}
+          onChange={onChange}
+        />
+
+        <input
+          type='text'
+          placeholder='Location'
+          name='location'
+          value={location}
+          onChange={onChange}
+        />
+
+        <input
+          type='text'
+          placeholder='Skills'
+          name='skills'
+          value={skills}
+          onChange={onChange}
+        />
+
+        <input
+          type='text'
+          placeholder='Github Username'
+          name='githubusername'
+          value={githubusername}
+          onChange={onChange}
+        />
+
+        <textarea
+          placeholder='Bio'
+          name='bio'
+          value={bio}
+          onChange={onChange}
+        />
+
+        <button
+          type='button'
+          className='btn btn-light'
+          onClick={() => toggleSocialInputs(!displaySocialInputs)}
+        >
+          Add Social Links
+        </button>
 
         {displaySocialInputs && (
           <Fragment>
-            <div className='form-group social-input'>
-              <i className='fab fa-twitter fa-2x' />
-              <input
-                type='text'
-                placeholder='Twitter URL'
-                name='twitter'
-                value={twitter}
-                onChange={(e) => onChange(e)}
-              />
-            </div>
-
-            <div className='form-group social-input'>
-              <i className='fab fa-facebook fa-2x' />
-              <input
-                type='text'
-                placeholder='Facebook URL'
-                name='facebook'
-                value={facebook}
-                onChange={(e) => onChange(e)}
-              />
-            </div>
-
-            <div className='form-group social-input'>
-              <i className='fab fa-youtube fa-2x' />
-              <input
-                type='text'
-                placeholder='YouTube URL'
-                name='youtube'
-                value={youtube}
-                onChange={(e) => onChange(e)}
-              />
-            </div>
-
-            <div className='form-group social-input'>
-              <i className='fab fa-linkedin fa-2x' />
-              <input
-                type='text'
-                placeholder='Linkedin URL'
-                name='linkedin'
-                value={linkedin}
-                onChange={(e) => onChange(e)}
-              />
-            </div>
-
-            <div className='form-group social-input'>
-              <i className='fab fa-instagram fa-2x' />
-              <input
-                type='text'
-                placeholder='Instagram URL'
-                name='instagram'
-                value={instagram}
-                onChange={(e) => onChange(e)}
-              />
-            </div>
+            <input name='twitter' value={twitter} onChange={onChange} placeholder='Twitter' />
+            <input name='facebook' value={facebook} onChange={onChange} placeholder='Facebook' />
+            <input name='youtube' value={youtube} onChange={onChange} placeholder='YouTube' />
+            <input name='linkedin' value={linkedin} onChange={onChange} placeholder='LinkedIn' />
+            <input name='instagram' value={instagram} onChange={onChange} placeholder='Instagram' />
           </Fragment>
         )}
 
-        <input type='submit' className='btn btn-primary my-1' />
-        <Link className='btn btn-light my-1' to='/dashboard'>
+        <input type='submit' className='btn btn-primary' />
+        <Link className='btn btn-light' to='/dashboard'>
           Go Back
         </Link>
       </form>
@@ -256,11 +205,11 @@ const EditProfile = ({
 EditProfile.propTypes = {
   createProfile: PropTypes.func.isRequired,
   getCurrentProfile: PropTypes.func.isRequired,
-  profile: PropTypes.object.isRequired,
+  profile: PropTypes.object.isRequired
 };
 
 const mapStateToProps = (state) => ({
-  profile: state.profile,
+  profile: state.profile
 });
 
 export default connect(mapStateToProps, { createProfile, getCurrentProfile })(EditProfile);

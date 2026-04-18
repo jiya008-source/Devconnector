@@ -16,6 +16,8 @@ app.use(cors({
 //It tells Express to accept JSON data from incoming requests and make it available in req.body.
 //extended:false uses basic parsing
 app.use(express.json({extended:false}));
+app.use('/api/upload', require('./routes/api/upload'));
+app.use('/uploads', express.static('uploads'));
 
 
 //Define Routes
