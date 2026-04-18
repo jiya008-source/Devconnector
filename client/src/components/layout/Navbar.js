@@ -13,35 +13,35 @@ const Navbar = ({ auth: { isAuthenticated, loading }, logout }) => {
   };
 
   const authLinks = (
-  <ul>
-    <li>
-      <Link to="/profiles">
-        Developers
-      </Link>
-    </li>
-    <li>
-      <Link to="/posts">
-        Posts
-      </Link>
-    </li>
-    <li>
-      <Link to="/dashboard">
-        <i className="fas fa-user"></i>{' '}
-        <span className="hide-sm">Dashboard</span>
-      </Link>
-    </li>
+    <ul>
+      <li>
+        <Link to="/profiles">
+          Developers
+        </Link>
+      </li>
+      <li>
+        <Link to="/posts">
+          Posts
+        </Link>
+      </li>
+      <li>
+        <Link to="/dashboard">
+          <i className="fas fa-user"></i>{' '}
+          <span className="hide-sm">My Profile</span>
+        </Link>
+      </li>
+      <li>
+        <button
+          onClick={onLogout}
+          style={{ background: "none", border: "none", color: "white", cursor: "pointer" }}
+        >
+          <i className="fas fa-sign-out-alt"></i>{' '}
+          <span className="hide-sm">Logout</span>
+        </button>
+      </li>
+    </ul>
+  );
 
-    <li>
-      <button
-        onClick={onLogout}
-        style={{ background: "none", border: "none", color: "white", cursor: "pointer" }}
-      >
-        <i className="fas fa-sign-out-alt"></i>{' '}
-        <span className="hide-sm">Logout</span>
-      </button>
-    </li>
-  </ul>
-);
   const guestLinks = (
     <ul>
       <li>
@@ -59,11 +59,10 @@ const Navbar = ({ auth: { isAuthenticated, loading }, logout }) => {
   return (
     <nav className="navbar bg-dark">
       <h1>
-        <Link to="/">
+        <Link to="/posts">
           <i className="fas fa-code"></i> DevConnector
         </Link>
       </h1>
-
       {!loading && (
         <Fragment>
           {isAuthenticated ? authLinks : guestLinks}
