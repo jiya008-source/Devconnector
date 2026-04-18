@@ -214,21 +214,20 @@ router.put('/experience', [auth, [
 // =======================
 router.get('/github/:username', async (req, res) => {
   try {
-    const uri = `https://api.github.com/users/${req.params.username}/repos` +
-      `?per_page=5&sort=created:asc` +
-      `&client_id=${config.get('githubClientId')}` +
-      `&client_secret=${config.get('githubSecret')}`;
-
-    const response = await axios.get(uri, {
-      headers: { 'User-Agent': 'node.js' }
-    });
-
+    const response = await axios.get(
+      `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc`,
+      {
+        headers: {
+          'User-Agent': 'node.js',
+          'Authorization': `token ${process.env.GITHUB_TOKEN}`
+        }
+      }
+    );
     res.json(response.data);
   } catch (err) {
     if (err.response && err.response.status === 404) {
       return res.status(404).json({ msg: 'No GitHub profile found' });
     }
-
     console.error(err.message);
     res.status(500).send('Server error');
   }
