@@ -81,7 +81,7 @@ const EditProfile = ({
         const formDataFile = new FormData();
         formDataFile.append('image', file);
 
-        const res = await fetch('/api/upload', {
+        const res = await fetch('https://devconnector-ja35.onrender.com/api/upload', {
           method: 'POST',
           body: formDataFile
         });
