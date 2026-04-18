@@ -4,17 +4,24 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
 
-// Config (add these to your Render environment variables)
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Use memory storage — no disk needed
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/', upload.single('image'), (req, res) => {
+  console.log('Upload route hit');
+  console.log('CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
+  console.log('API_KEY:', process.env.CLOUDINARY_API_KEY);
+  console.log('File received:', req.file ? req.file.originalname : 'NO FILE');
+
+  if (!req.file) {
+    return res.status(400).json({ msg: 'No file received' });
+  }
+
   const streamUpload = (req) => {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream((error, result) => {
@@ -26,10 +33,13 @@ router.post('/', upload.single('image'), (req, res) => {
   };
 
   streamUpload(req)
-    .then((result) => res.json({ filePath: result.secure_url }))
+    .then((result) => {
+      console.log('Upload success:', result.secure_url);
+      res.json({ filePath: result.secure_url });
+    })
     .catch((err) => {
-      console.error('Cloudinary upload error:', err);
-      res.status(500).json({ msg: 'Upload failed' });
+      console.error('Cloudinary upload error:', JSON.stringify(err));
+      res.status(500).json({ msg: 'Upload failed', error: err.message });
     });
 });
 
