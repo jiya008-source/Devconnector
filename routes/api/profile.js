@@ -206,7 +206,66 @@ router.put('/experience', [auth, [
 // =======================
 // EDUCATION (UNCHANGED)
 // =======================
-// (keep your existing education routes as-is)
+// =======================
+// ADD EDUCATION
+// =======================
+router.put('/education', [auth, [
+  check('school', 'School is required').not().isEmpty(),
+  check('degree', 'Degree is required').not().isEmpty(),
+  check('fieldofstudy', 'Field of study is required').not().isEmpty(),
+  check('from', 'From date is required').not().isEmpty()
+]], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const newEdu = req.body;
+
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+    profile.education.unshift(newEdu);
+    await profile.save();
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// =======================
+// DELETE EDUCATION
+// =======================
+router.delete('/education/:edu_id', auth, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+    profile.education = profile.education.filter(
+      edu => edu._id.toString() !== req.params.edu_id
+    );
+    await profile.save();
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// =======================
+// DELETE EXPERIENCE
+// =======================
+router.delete('/experience/:exp_id', auth, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+    profile.experience = profile.experience.filter(
+      exp => exp._id.toString() !== req.params.exp_id
+    );
+    await profile.save();
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
 
 
 // =======================
