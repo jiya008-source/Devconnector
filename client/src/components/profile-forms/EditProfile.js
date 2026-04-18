@@ -25,10 +25,11 @@ const EditProfile = ({
   createProfile,
   getCurrentProfile
 }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState(initialState);
   const [file, setFile] = useState(null);
   const [displaySocialInputs, toggleSocialInputs] = useState(false);
-  const navigate = useNavigate();
+  const [uploadError, setUploadError] = useState(null);
 
   useEffect(() => {
     if (!profile) getCurrentProfile();
@@ -70,24 +71,47 @@ const EditProfile = ({
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setUploadError(null);
 
     let avatarUrl = formData.avatar;
 
-    // 1. Upload image if selected
+    // Upload image if a file was selected
     if (file) {
-      const formDataFile = new FormData();
-      formDataFile.append('image', file);
+      try {
+        const formDataFile = new FormData();
+        formDataFile.append('image', file);
 
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formDataFile
-      });
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formDataFile
+        });
 
-      const data = await res.json();
-      avatarUrl = data.filePath;
+        // Check if the response is OK before parsing JSON
+        if (!res.ok) {
+          const text = await res.text();
+          console.error('Upload server error:', text);
+          setUploadError(`Upload failed (${res.status}): ${text}`);
+          return;
+        }
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await res.text();
+          console.error('Upload did not return JSON:', text);
+          setUploadError('Upload endpoint returned an unexpected response. Check your server.');
+          return;
+        }
+
+        const data = await res.json();
+        avatarUrl = data.filePath;
+      } catch (err) {
+        console.error('Upload error:', err);
+        setUploadError('Upload failed. Check console for details.');
+        return;
+      }
     }
 
-    // 2. Save profile with avatar URL
+    // Save profile with avatar URL
     createProfile(
       { ...formData, avatar: avatarUrl },
       navigate,
@@ -99,21 +123,26 @@ const EditProfile = ({
     <Fragment>
       <h1 className='large text-primary'>Edit Your Profile</h1>
       <p className='lead'>
-        <i className='fas fa-user' /> Edit your profile
+        <i className='fas fa-user'></i> Edit and customize your profile
       </p>
+      <small>* = required field</small>
 
       <form className='form' onSubmit={onSubmit}>
 
-        {/* ✅ PROFILE IMAGE INPUT */}
+        {/* Profile Image */}
         <div className='form-group'>
-          <p>Profile Image</p>
+          <h4>Profile Image</h4>
           <input
             type='file'
             accept='image/*'
             onChange={(e) => setFile(e.target.files[0])}
           />
+          {uploadError && (
+            <p style={{ color: 'red', marginTop: '5px' }}>{uploadError}</p>
+          )}
         </div>
 
+        {/* Status */}
         <div className='form-group'>
           <select name='status' value={status} onChange={onChange}>
             <option value=''>* Select Professional Status</option>
@@ -128,75 +157,145 @@ const EditProfile = ({
           </select>
         </div>
 
-        <input
-          type='text'
-          placeholder='Company'
-          name='company'
-          value={company}
-          onChange={onChange}
-        />
+        {/* Company */}
+        <div className='form-group'>
+          <input
+            type='text'
+            placeholder='Company'
+            name='company'
+            value={company}
+            onChange={(e) => onChange(e)}
+          />
+        </div>
 
-        <input
-          type='text'
-          placeholder='Website'
-          name='website'
-          value={website}
-          onChange={onChange}
-        />
+        {/* Website */}
+        <div className='form-group'>
+          <input
+            type='text'
+            placeholder='Website'
+            name='website'
+            value={website}
+            onChange={(e) => onChange(e)}
+          />
+        </div>
 
-        <input
-          type='text'
-          placeholder='Location'
-          name='location'
-          value={location}
-          onChange={onChange}
-        />
+        {/* Location */}
+        <div className='form-group'>
+          <input
+            type='text'
+            placeholder='Location'
+            name='location'
+            value={location}
+            onChange={(e) => onChange(e)}
+          />
+        </div>
 
-        <input
-          type='text'
-          placeholder='Skills'
-          name='skills'
-          value={skills}
-          onChange={onChange}
-        />
+        {/* Skills */}
+        <div className='form-group'>
+          <input
+            type='text'
+            placeholder='* Skills'
+            name='skills'
+            value={skills}
+            onChange={(e) => onChange(e)}
+          />
+        </div>
 
-        <input
-          type='text'
-          placeholder='Github Username'
-          name='githubusername'
-          value={githubusername}
-          onChange={onChange}
-        />
+        {/* GitHub Username */}
+        <div className='form-group'>
+          <input
+            type='text'
+            placeholder='Github Username'
+            name='githubusername'
+            value={githubusername}
+            onChange={(e) => onChange(e)}
+          />
+        </div>
 
-        <textarea
-          placeholder='Bio'
-          name='bio'
-          value={bio}
-          onChange={onChange}
-        />
+        {/* Bio */}
+        <div className='form-group'>
+          <textarea
+            name='bio'
+            cols='30'
+            rows='5'
+            placeholder='A short bio about yourself'
+            value={bio}
+            onChange={(e) => onChange(e)}
+          ></textarea>
+        </div>
 
-        <button
-          type='button'
-          className='btn btn-light'
-          onClick={() => toggleSocialInputs(!displaySocialInputs)}
-        >
-          Add Social Links
-        </button>
+        {/* Social Links Toggle */}
+        <div className='form-group'>
+          <button
+            type='button'
+            className='btn btn-light'
+            onClick={() => toggleSocialInputs(!displaySocialInputs)}
+          >
+            Add Social Network Links
+          </button>
+          <span>Optional</span>
+        </div>
 
         {displaySocialInputs && (
           <Fragment>
-            <input name='twitter' value={twitter} onChange={onChange} placeholder='Twitter' />
-            <input name='facebook' value={facebook} onChange={onChange} placeholder='Facebook' />
-            <input name='youtube' value={youtube} onChange={onChange} placeholder='YouTube' />
-            <input name='linkedin' value={linkedin} onChange={onChange} placeholder='LinkedIn' />
-            <input name='instagram' value={instagram} onChange={onChange} placeholder='Instagram' />
+            <div className='form-group social-input'>
+              <i className='fab fa-twitter fa-2x'></i>
+              <input
+                type='text'
+                placeholder='Twitter URL'
+                name='twitter'
+                value={twitter}
+                onChange={(e) => onChange(e)}
+              />
+            </div>
+            <div className='form-group social-input'>
+              <i className='fab fa-facebook fa-2x'></i>
+              <input
+                type='text'
+                placeholder='Facebook URL'
+                name='facebook'
+                value={facebook}
+                onChange={(e) => onChange(e)}
+              />
+            </div>
+            <div className='form-group social-input'>
+              <i className='fab fa-youtube fa-2x'></i>
+              <input
+                type='text'
+                placeholder='YouTube URL'
+                name='youtube'
+                value={youtube}
+                onChange={(e) => onChange(e)}
+              />
+            </div>
+            <div className='form-group social-input'>
+              <i className='fab fa-linkedin fa-2x'></i>
+              <input
+                type='text'
+                placeholder='Linkedin URL'
+                name='linkedin'
+                value={linkedin}
+                onChange={(e) => onChange(e)}
+              />
+            </div>
+            <div className='form-group social-input'>
+              <i className='fab fa-instagram fa-2x'></i>
+              <input
+                type='text'
+                placeholder='Instagram URL'
+                name='instagram'
+                value={instagram}
+                onChange={(e) => onChange(e)}
+              />
+            </div>
           </Fragment>
         )}
 
-        <input type='submit' className='btn btn-primary' />
-        <Link className='btn btn-light' to='/dashboard'>
+        <input type='submit' className='btn btn-primary my-1' />
+        <Link className='btn my-1' to='/dashboard'>
           Go Back
         </Link>
+
       </form>
     </Fragment>
   );
