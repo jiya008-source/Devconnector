@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 const ProfileItem = ({
   profile: {
     user: { _id, name, avatar },
+    avatar: profileAvatar,
     status,
     company,
     location,
@@ -13,7 +14,7 @@ const ProfileItem = ({
 }) => {
   return (
     <div className='profile bg-light'>
-      <img src={avatar} alt='' className='round-img' />
+      <img src={profileAvatar || avatar} alt='' className='round-img' />
       <div>
         <h2>{name}</h2>
         <p>
