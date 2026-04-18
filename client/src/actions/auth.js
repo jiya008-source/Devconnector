@@ -79,16 +79,11 @@ export const login = (email, password) => async dispatch => {
     const body = JSON.stringify({ email, password });
 
     try {
-        const res = await api.post('/api/auth', body, config);
-
-        dispatch({
-            type: LOGIN_SUCCESS,
-            payload: res.data
-        });
-
-        setAuthToken(res.data.token);
-        dispatch(loadUser());
-
+       const res = await api.post('/api/auth', body, config);
+setAuthToken(res.data.token);                       
+localStorage.setItem('token', res.data.token);      
+dispatch({ type: LOGIN_SUCCESS, payload: res.data });
+dispatch(loadUser());                                 
     } catch (err) {
         const errors = err.response?.data?.errors;
 
